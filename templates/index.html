@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador Inteligente de Licitações - MIB Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add SheetJS for Excel generation with styles -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8 font-sans">
+    <div class="absolute top-4 right-8 flex gap-4">
+        <a href="{{ url_for('escolha') }}" class="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <span>Voltar</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+            <span>Sair</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </a>
+    </div>
+    <div class="max-w-[95%] mx-auto">
+        <header class="mb-10 text-center flex justify-center items-center gap-3">
+            <span class="text-4xl">🎯</span>
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+                Buscador Inteligente de Licitações
+            </h1>
+        </header>
+        <p class="text-gray-400 mt-2 text-center mb-8">MIB Solutions - Busca Automática de Licitações</p>
+
+        <div class="bg-gray-800 rounded-xl p-6 shadow-xl mb-8 border border-gray-700">
+            <form id="searchForm" class="flex flex-col md:flex-row gap-4">
+                <input 
+                    type="text" 
+                    id="searchTerm" 
+                    placeholder='Digite o termo de busca (ex: "Serviços de TI")' 
+                    required
+                    class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                >
+                <input 
+                    type="date" 
+                    id="dataInicial" 
+                    class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    title="Data Inicial"
+                >
+                <input 
+                    type="date" 
+                    id="dataFinal" 
+                    class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    title="Data Final"
+                >
+                <button 
+                    type="submit" 
+                    id="searchBtn"
+                    class="bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition duration-200 min-w-[160px]"
+                >
+                    <span id="btnText">Buscar Edital</span>
+                    <div id="loadingSpinner" class="spinner hidden"></div>
+                </button>
+            </form>
+            <div id="errorMsg" class="hidden mt-4 text-red-400 text-sm"></div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 hidden" id="resultsContainer">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-semibold inline-block">Resultados Encontrados</h2>
+                    <span id="resultsCount" class="bg-brand-600 text-xs px-3 py-1 rounded-full font-bold ml-2">0</span>
+                </div>
+                <button 
+                    id="downloadBtn" 
+                    class="hidden bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition duration-200 text-sm"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Baixar Excel (XLSX)
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse table-fixed">
+                    <thead>
+                        <tr class="bg-gray-700 text-gray-300 text-sm uppercase tracking-wider">
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Número</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Status</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-48">Órgão</th>
+                            <th class="p-4 font-medium border-b border-gray-600">Objeto</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Valor Estimado</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Abertura</th>
+                            <th class="p-4 font-medium border-b border-gray-600 text-center w-24">Edital</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody" class="divide-y divide-gray-700 text-sm">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="p-8 text-center text-gray-400 hidden">
+                Nenhuma licitação encontrada para este termo.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const term = document.getElementById('searchTerm').value;
+            const dataInicial = document.getElementById('dataInicial').value;
+            const dataFinal = document.getElementById('dataFinal').value;
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('loadingSpinner');
+            const searchBtn = document.getElementById('searchBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsBody = document.getElementById('resultsBody');
+            const resultsCount = document.getElementById('resultsCount');
+            const downloadBtn = document.getElementById('downloadBtn');
+            let globalResults = [];
+
+            // Reset UI
+            errorMsg.classList.add('hidden');
+            btnText.textContent = 'Buscando...';
+            spinner.classList.remove('hidden');
+            searchBtn.disabled = true;
+            searchBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            resultsContainer.classList.add('hidden');
+            resultsBody.innerHTML = '';
+            downloadBtn.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ term, dataInicial, dataFinal })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao realizar a busca no servidor');
+                }
+                
+                // Show results container
+                resultsContainer.classList.remove('hidden');
+                
+                if (data.results && data.results.length > 0) {
+                    window.globalResults = data.results;
+                    emptyState.classList.add('hidden');
+                    resultsCount.textContent = data.results.length;
+                    
+                    if (data.results.length > 10) {
+                        downloadBtn.classList.remove('hidden');
+                    }
+                    
+                    data.results.slice(0, 10).forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-750 transition duration-150 group';
+                        
+                        let statusColor = "bg-gray-600";
+                        if (item.status && item.status.toLowerCase().includes("recebendo")) {
+                            statusColor = "bg-green-600";
+                        } else if (item.status && (item.status.toLowerCase().includes("encerrado") || item.status.toLowerCase().includes("cancelado"))) {
+                            statusColor = "bg-red-600";
+                        }
+                        
+                        tr.innerHTML = `
+                            <td class="p-4 align-top font-medium text-blue-400 break-words"><div class="line-clamp-3" title="${item.numero || 'N/A'}">${item.numero || 'N/A'}</div></td>
+                            <td class="p-4 align-top"><div class="truncate ${statusColor} text-white text-[10px] px-2 py-1 rounded-full font-semibold inline-block text-center w-full" title="${item.status || 'Desconhecido'}">${item.status || 'Desconhecido'}</div></td>
+                            <td class="p-4 align-top break-words"><div class="line-clamp-3" title="${item.orgao || 'N/A'}">${item.orgao || 'N/A'}</div></td>
+                            <td class="p-4 align-top text-gray-300 break-words"><div class="line-clamp-3" title="${item.objeto || 'N/A'}">${item.objeto || 'N/A'}</div></td>
+                            <td class="p-4 align-top text-green-400 font-medium break-words">${item.valor || 'Não informado'}</td>
+                            <td class="p-4 align-top text-gray-400 break-words"><div class="line-clamp-2">${item.abertura || 'N/A'}</div></td>
+                            <td class="p-4 align-top text-center">
+                                ${item.link ? 
+                                `<a href="${item.link}" target="_blank" class="inline-flex items-center justify-center p-2 bg-gray-700 hover:bg-brand-600 rounded-lg transition text-white" title="Abrir Edital">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>` 
+                                : '<span class="text-gray-500">-</span>'}
+                            </td>
+                        `;
+                        resultsBody.appendChild(tr);
+                    });
+                } else {
+                    emptyState.classList.remove('hidden');
+                    resultsCount.textContent = '0';
+                }
+                
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                // Restore button state
+                btnText.textContent = 'Buscar Edital';
+                spinner.classList.add('hidden');
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!window.globalResults || window.globalResults.length === 0) return;
+            
+            // Convert table to Excel to keep the "treated" aspect, or create a better one
+            const ws = XLSX.utils.json_to_sheet(window.globalResults.map(item => ({
+                "Número": item.numero || 'N/A',
+                "Status": item.status || 'Desconhecido',
+                "Órgão": item.orgao || 'N/A',
+                "Objeto": item.objeto || 'N/A',
+                "Valor Estimado": item.valor || 'Não informado',
+                "Abertura": item.abertura || 'N/A',
+                "Edital": item.link || 'N/A'
+            })));
+
+            const wb = XLSX.utils.book_new();
+            
+            // Adjust column widths based on contents and headers to make it look "treated"
+            const colWidths = [
+                { wch: 25 }, // Número
+                { wch: 20 }, // Status
+                { wch: 50 }, // Órgão
+                { wch: 80 }, // Objeto
+                { wch: 20 }, // Valor Estimado
+                { wch: 25 }, // Abertura
+                { wch: 60 }  // Link
+            ];
+            ws['!cols'] = colWidths;
+
+            // Make headers bold by looping through the first row
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for(let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_col(C) + "1"; // e.g., A1, B1
+                if(!ws[address]) continue;
+                ws[address].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F81BD" } },
+                    alignment: { horizontal: "center" }
+                };
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, "Licitações");
+            XLSX.writeFile(wb, `licitacoes_${new Date().getTime()}.xlsx`);
+        });
+    </script>
+</body>
+</html>

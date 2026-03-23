@@ -1,0 +1,28 @@
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Ajustes de scrollbar escura */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #1f2937;
+  border-radius: 10px;
+  border: 2px solid #0f172a;
+}
+
+/* Tabela responsiva: quebra longos textos de objeto */
+td {
+  word-break: break-word;
+}
+
+.hidden {
+  display: none;
+}

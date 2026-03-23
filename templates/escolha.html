@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha de Módulo - MIB Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        },
+                        accent: {
+                            500: '#2ecc71',
+                            600: '#27ae60',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8 font-sans flex flex-col justify-center items-center">
+    <div class="absolute top-4 right-8">
+        <a href="{{ url_for('logout') }}" class="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+            <span>Sair</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </a>
+    </div>
+
+    <header class="mb-12 text-center flex flex-col justify-center items-center gap-3">
+        <span class="text-5xl mb-2">🚀</span>
+        <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400">
+            Escolha o Módulo
+        </h1>
+        <p class="text-gray-400 mt-2 text-lg">Selecione qual sistema você deseja acessar</p>
+    </header>
+
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Card 1: Licitações Abertas -->
+        <a href="{{ url_for('abertas') }}" class="group block bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700 hover:border-brand-500 hover:shadow-brand-500/20 transition-all duration-300 transform hover:-translate-y-2">
+            <div class="flex items-center justify-center w-16 h-16 bg-blue-500/10 rounded-xl mb-6 group-hover:bg-blue-500/20 transition-colors">
+                <span class="text-3xl">🎯</span>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-brand-400 transition-colors">
+                Buscador de Licitações Aberta
+            </h2>
+            <p class="text-gray-400 leading-relaxed mb-6">
+                Busca automática de licitações no Portal Nacional de Contratações Públicas (PNCP). Acompanhe editais ativos e em fase de recebimento de propostas.
+            </p>
+            <div class="flex items-center text-brand-500 font-semibold group-hover:translate-x-2 transition-transform">
+                Acessar Módulo
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+        </a>
+
+        <!-- Card 2: Licitações Pagas -->
+        <a href="{{ url_for('pagas') }}" class="group block bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700 hover:border-accent-500 hover:shadow-accent-500/20 transition-all duration-300 transform hover:-translate-y-2">
+            <div class="flex items-center justify-center w-16 h-16 bg-green-500/10 rounded-xl mb-6 group-hover:bg-green-500/20 transition-colors">
+                <span class="text-3xl">💰</span>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-accent-400 transition-colors">
+                Licitações Pagas
+            </h2>
+            <p class="text-gray-400 leading-relaxed mb-6">
+                Consulta avançada no Portal da Transparência. Encontre licitações concluídas, explore dados de fornecedores e identifique valores homologados.
+            </p>
+            <div class="flex items-center text-accent-500 font-semibold group-hover:translate-x-2 transition-transform">
+                Acessar Módulo
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MIB Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8 font-sans flex items-center justify-center">
+    <div class="max-w-md w-full">
+        <header class="mb-10 text-center flex flex-col justify-center items-center gap-3">
+            <span class="text-5xl mb-2">🎯</span>
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+                Acesso ao Sistema
+            </h1>
+            <p class="text-gray-400 mt-2 text-center">Buscador Inteligente de Licitações</p>
+        </header>
+
+        <div class="bg-gray-800 rounded-xl p-8 shadow-xl border border-gray-700">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded-lg relative mb-6" role="alert">
+                    <span class="block sm:inline">{{ message }}</span>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST" class="flex flex-col gap-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">E-mail</label>
+                    <input 
+                        type="text" 
+                        id="email" 
+                        name="email"
+                        placeholder="Seu e-mail cadastrado" 
+                        required
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    >
+                </div>
+                <div>
+                    <label for="senha" class="block text-sm font-medium text-gray-300 mb-2">Senha</label>
+                    <input 
+                        type="password" 
+                        id="senha" 
+                        name="senha"
+                        placeholder="Sua senha" 
+                        required
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition duration-200 mt-2"
+                >
+                    Entrar
+                </button>
+            </form>
+        </div>
+        <p class="text-center text-gray-500 mt-8 text-sm">
+            © 2026 MIB Solutions. Todos os direitos reservados.
+        </p>
+    </div>
+</body>
+</html>
