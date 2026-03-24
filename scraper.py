@@ -56,7 +56,7 @@ class ComprasScraper:
                 if stop_search: break
                 
                 params['pagina'] = str(pagina)
-                response = requests.get(url, params=params, timeout=15)
+                response = requests.get(url, params=params, timeout=60, verify=False)
                 
                 if response.status_code != 200:
                     break
