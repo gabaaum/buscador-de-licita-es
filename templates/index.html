@@ -48,13 +48,64 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
         </a>
     </div>
-    <div class="max-w-[95%] mx-auto">
+    <div class="max-w-[95%] mx-auto relative">
         <header class="mb-10 text-center flex justify-center items-center gap-3">
             <span class="text-4xl">🎯</span>
             <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
                 Buscador Inteligente de Licitações
             </h1>
         </header>
+
+        <!-- MODAL RESUMO EDITAL -->
+        <div id="modalResumo" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-70 transition-opacity">
+            <div class="bg-[#121212] border-t-4 border-[#2ecc71] rounded-lg shadow-2xl p-6 w-11/12 md:w-[600px] flex flex-col relative transform transition-all">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                
+                <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2 flex items-center gap-2">
+                    <span class="text-2xl">📄</span> Análise de Edital
+                </h3>
+                
+                <div id="modalLoading" class="flex flex-col items-center justify-center py-8">
+                    <div class="spinner !border-l-[#2ecc71] mb-4 w-10 h-10"></div>
+                    <p class="text-gray-300">🤖 Analisando edital... Por favor, aguarde.</p>
+                </div>
+
+                <div id="modalContent" class="hidden flex-col gap-4 py-2">
+                    <div class="bg-gray-800 rounded p-3">
+                        <p class="text-xs text-gray-400 uppercase font-bold">💰 Valor Estimado</p>
+                        <p id="resValor" class="text-green-400 font-semibold"></p>
+                    </div>
+                    <div class="bg-gray-800 rounded p-3">
+                        <p class="text-xs text-gray-400 uppercase font-bold">📝 Objeto Resumido</p>
+                        <p id="resObjeto" class="text-gray-200 text-sm"></p>
+                    </div>
+                    <div class="bg-gray-800 rounded p-3">
+                        <p class="text-xs text-gray-400 uppercase font-bold">🛡️ Exigências Identificadas</p>
+                        <ul id="resExigencias" class="list-disc pl-5 text-gray-200 text-sm mt-1"></ul>
+                    </div>
+                    <div class="bg-gray-800 rounded p-3">
+                        <p class="text-xs text-gray-400 uppercase font-bold">📅 Data da Sessão</p>
+                        <p id="resData" class="text-gray-200 font-semibold"></p>
+                    </div>
+                </div>
+
+                <div id="modalError" class="hidden flex-col items-center justify-center py-6 text-center">
+                    <span class="text-4xl mb-2">⚠️</span>
+                    <p id="errorText" class="text-gray-300">Resumo indisponível para este formato. Clique abaixo para baixar o arquivo completo.</p>
+                </div>
+
+                <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-700">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition order-2 sm:order-1">Fechar</button>
+                    <button id="btnVerAgora" onclick="closeModal()" class="hidden px-4 py-2 border border-[#2ecc71] text-[#2ecc71] hover:bg-[#2ecc71] hover:bg-opacity-10 rounded transition order-1 sm:order-2">Ver Agora</button>
+                    <a id="btnDownloadCompleto" href="#" target="_blank" class="px-4 py-2 bg-[#2ecc71] hover:bg-[#27ae60] text-white rounded transition flex justify-center items-center gap-2 order-1 sm:order-3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Baixar PDF Completo
+                    </a>
+                </div>
+            </div>
+        </div>
         <p class="text-gray-400 mt-2 text-center mb-8">MIB Solutions - Busca Automática de Licitações</p>
 
         <div class="bg-gray-800 rounded-xl p-6 shadow-xl mb-8 border border-gray-700">
@@ -201,9 +252,9 @@
                             <td class="p-4 align-top text-gray-400 break-words"><div class="line-clamp-2">${item.abertura || 'N/A'}</div></td>
                             <td class="p-4 align-top text-center">
                                 ${item.link ? 
-                                `<a href="${item.link}" target="_blank" class="inline-flex items-center justify-center p-2 bg-gray-700 hover:bg-brand-600 rounded-lg transition text-white" title="Abrir Edital">
+                                `<button type="button" onclick="handleEditalClick('${item.link}', '${item.numero}', '${item.orgao}')" class="inline-flex items-center justify-center p-2 bg-gray-700 hover:bg-[#2ecc71] rounded-lg transition text-white" title="Analisar Edital">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                </a>` 
+                                </button>` 
                                 : '<span class="text-gray-500">-</span>'}
                             </td>
                         `;
@@ -269,6 +320,80 @@
             XLSX.utils.book_append_sheet(wb, ws, "Licitações");
             XLSX.writeFile(wb, `licitacoes_${new Date().getTime()}.xlsx`);
         });
+
+        // Funções da Modal
+        const modal = document.getElementById('modalResumo');
+        const modalLoading = document.getElementById('modalLoading');
+        const modalContent = document.getElementById('modalContent');
+        const modalError = document.getElementById('modalError');
+        const btnVerAgora = document.getElementById('btnVerAgora');
+        const btnDownloadCompleto = document.getElementById('btnDownloadCompleto');
+        
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        function formatFileName(orgao, numero) {
+            const cleanOrgao = (orgao || 'Orgao').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+            const cleanNum = (numero || '000').replace(/[^a-zA-Z0-9]/g, '_');
+            return `Edital_${cleanOrgao}_${cleanNum}.pdf`;
+        }
+
+        async function handleEditalClick(url, numero, orgao) {
+            // Setup Modal
+            modal.classList.remove('hidden');
+            modalLoading.classList.remove('hidden');
+            modalContent.classList.add('hidden');
+            modalError.classList.add('hidden');
+            btnVerAgora.classList.add('hidden');
+            
+            // Set download direct link for the button
+            btnDownloadCompleto.href = url;
+            btnDownloadCompleto.download = formatFileName(orgao, numero);
+
+            try {
+                const response = await fetch('/api/get-resumo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                const data = await response.json();
+                
+                modalLoading.classList.add('hidden');
+                
+                if (data.sucesso) {
+                    modalContent.classList.remove('hidden');
+                    btnVerAgora.classList.remove('hidden');
+                    
+                    document.getElementById('resValor').textContent = data.resumo.valor_estimado;
+                    document.getElementById('resObjeto').textContent = data.resumo.objeto;
+                    document.getElementById('resData').textContent = data.resumo.data_sessao;
+                    
+                    const exUl = document.getElementById('resExigencias');
+                    exUl.innerHTML = '';
+                    data.resumo.exigencias.forEach(ex => {
+                        const li = document.createElement('li');
+                        li.textContent = ex;
+                        exUl.appendChild(li);
+                    });
+                    
+                    if(data.url_resolvida) {
+                        btnDownloadCompleto.href = data.url_resolvida;
+                    }
+                } else {
+                    modalError.classList.remove('hidden');
+                    document.getElementById('errorText').textContent = data.mensagem || "Resumo indisponível para este formato. Clique abaixo para baixar o arquivo completo.";
+                    if(data.url_resolvida) {
+                        btnDownloadCompleto.href = data.url_resolvida;
+                    }
+                }
+            } catch (error) {
+                modalLoading.classList.add('hidden');
+                modalError.classList.remove('hidden');
+                document.getElementById('errorText').textContent = "Erro ao processar o edital. Clique abaixo para baixar o arquivo completo.";
+            }
+        }
     </script>
 </body>
 </html>

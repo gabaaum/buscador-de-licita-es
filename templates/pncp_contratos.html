@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNCP - Contratos e Pagamentos | MIB Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add SheetJS for Excel generation with styles -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#a855f7',
+                            600: '#9333ea',
+                        },
+                        accent: {
+                            500: '#2ecc71',
+                            600: '#27ae60',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8 font-sans">
+    <div class="absolute top-4 right-8 flex gap-4">
+        <a href="{{ url_for('escolha') }}" class="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <span>Voltar</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+            <span>Sair</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </a>
+    </div>
+    <div class="max-w-[95%] mx-auto">
+        <header class="mb-10 text-center flex justify-center items-center gap-3">
+            <span class="text-4xl">📝</span>
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">
+                PNCP - Contratos e Pagamentos
+            </h1>
+        </header>
+        <p class="text-gray-400 mt-2 text-center mb-8">Inteligência Competitiva: Contratos vigentes, empenhos e valores homologados.</p>
+
+        <div class="bg-gray-800 rounded-xl p-6 shadow-xl mb-8 border border-gray-700">
+            <form id="searchForm" class="flex flex-col gap-4">
+                <!-- Linha 1: Palavra-chave, Número e UF -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input 
+                        type="text" 
+                        id="searchTerm" 
+                        placeholder='Produto/Serviço (ex: "Computadores")' 
+                        class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        title="Busca textual por palavra-chave"
+                    >
+                    <input 
+                        type="text" 
+                        id="numeroLicitacao" 
+                        placeholder='Nº da Licitação/Contrato' 
+                        class="flex-1 md:w-48 md:flex-none bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        title="Busca exata pelo número do edital/contrato"
+                    >
+                    <select id="ufSelect" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition w-32">
+                        <option value="SP" selected>SP</option>
+                        <option value="Todos">Todos</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                </div>
+                <!-- Linha 2: Datas e Botão -->
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <input 
+                        type="date" 
+                        id="dataInicial" 
+                        class="flex-1 md:w-auto bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        title="Data Inicial (Máx 1 ano de intervalo)"
+                    >
+                    <span class="text-gray-400 font-bold hidden md:inline">até</span>
+                    <input 
+                        type="date" 
+                        id="dataFinal" 
+                        class="flex-1 md:w-auto bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        title="Data Final"
+                    >
+                    <button 
+                        type="submit" 
+                        id="searchBtn"
+                        class="bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition duration-200 min-w-[160px] w-full md:w-auto"
+                    >
+                        <span id="btnText">Buscar Contratos</span>
+                        <div id="loadingSpinner" class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
+            <div class="mt-3 flex items-center gap-2 text-xs text-purple-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Aviso: O período de busca (Data Inicial até Data Final) não pode ultrapassar 1 ano (365 dias). Se deixar em branco, o sistema buscará os últimos 365 dias.</span>
+            </div>
+            <div id="logMsg" class="hidden mt-4 text-purple-400 text-sm italic"></div>
+            <div id="errorMsg" class="hidden mt-4 text-red-400 text-sm"></div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 hidden" id="resultsContainer">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-semibold inline-block">Resultados Encontrados</h2>
+                    <span id="resultsCount" class="bg-brand-600 text-xs px-3 py-1 rounded-full font-bold ml-2">0</span>
+                    <span id="totalValue" class="text-green-400 font-bold ml-4">R$ 0,00</span>
+                </div>
+                <button 
+                    id="downloadBtn" 
+                    class="hidden bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition duration-200 text-sm"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Baixar Excel (XLSX)
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse table-fixed">
+                    <thead>
+                        <tr class="bg-gray-700 text-gray-300 text-sm uppercase tracking-wider">
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Nº Contrato</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-48">Órgão Comprador</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-48">Empresa Contratada</th>
+                            <th class="p-4 font-medium border-b border-gray-600">Objeto</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">V. Homologado</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">V. Empenhado</th>
+                            <th class="p-4 font-medium border-b border-gray-600 w-32">Assinatura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody" class="divide-y divide-gray-700 text-sm">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="p-8 text-center text-gray-400 hidden">
+                Nenhuma licitação encontrada para este termo.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(value) {
+            if (!value) return "R$ 0,00";
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const term = document.getElementById('searchTerm').value;
+            const numeroLicitacao = document.getElementById('numeroLicitacao').value;
+            const uf = document.getElementById('ufSelect').value;
+            const dataInicial = document.getElementById('dataInicial').value;
+            const dataFinal = document.getElementById('dataFinal').value;
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('loadingSpinner');
+            const searchBtn = document.getElementById('searchBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const logMsg = document.getElementById('logMsg');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsBody = document.getElementById('resultsBody');
+            const resultsCount = document.getElementById('resultsCount');
+            const totalValueEl = document.getElementById('totalValue');
+            const downloadBtn = document.getElementById('downloadBtn');
+            let globalResults = [];
+
+            // Reset UI
+            errorMsg.classList.add('hidden');
+            logMsg.classList.remove('hidden');
+            
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            logMsg.textContent = `[${timeStr}] Conectando ao PNCP... Filtrando empenhos celebrados em ${uf}.`;
+            
+            btnText.textContent = 'Buscando...';
+            spinner.classList.remove('hidden');
+            searchBtn.disabled = true;
+            searchBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            resultsContainer.classList.add('hidden');
+            resultsBody.innerHTML = '';
+            downloadBtn.classList.add('hidden');
+            
+            try {
+                if (!term && !numeroLicitacao) {
+                    throw new Error("Por favor, informe pelo menos o Produto/Serviço ou o Nº da Licitação.");
+                }
+
+                const response = await fetch('/api/search_pncp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ term, numeroLicitacao, uf, dataInicial, dataFinal })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao realizar a busca no servidor');
+                }
+                
+                // Show results container
+                resultsContainer.classList.remove('hidden');
+                
+                if (data.results && data.results.length > 0) {
+                    window.globalResults = data.results;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    resultsCount.textContent = data.results.length;
+                    
+                    let totalVal = 0;
+                    data.results.forEach(r => {
+                        if (r.valor_homologado_raw) {
+                            totalVal += parseFloat(r.valor_homologado_raw);
+                        }
+                    });
+                    totalValueEl.textContent = `| Valor Total: ${formatCurrency(totalVal)}`;
+                    
+                    if (data.results.length > 0) {
+                        downloadBtn.classList.remove('hidden');
+                    }
+                    
+                    data.results.slice(0, 10).forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-750 transition duration-150 group';
+                        
+                        tr.innerHTML = `
+                            <td class="p-4 align-top font-medium text-blue-400 break-words"><div class="line-clamp-3" title="${item.numero_contrato || 'N/A'}">${item.numero_contrato || 'N/A'}</div></td>
+                            <td class="p-4 align-top break-words"><div class="line-clamp-3" title="${item.orgao || 'N/A'}">${item.orgao || 'N/A'}</div></td>
+                            <td class="p-4 align-top break-words"><div class="line-clamp-3" title="${item.empresa || 'N/A'}">${item.empresa || 'N/A'}</div></td>
+                            <td class="p-4 align-top text-gray-300 break-words"><div class="line-clamp-3" title="${item.objeto || 'N/A'}">${item.objeto || 'N/A'}</div></td>
+                            <td class="p-4 align-top text-green-400 font-medium break-words">${item.valor_homologado || 'R$ 0,00'}</td>
+                            <td class="p-4 align-top text-purple-400 font-medium break-words">${item.valor_empenhado || 'R$ 0,00'}</td>
+                            <td class="p-4 align-top text-gray-400 break-words"><div class="line-clamp-2">${item.data_assinatura || 'N/A'}</div></td>
+                        `;
+                        resultsBody.appendChild(tr);
+                    });
+                } else {
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    resultsCount.textContent = '0';
+                    totalValueEl.textContent = 'R$ 0,00';
+                }
+                
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                logMsg.classList.add('hidden');
+                // Restore button state
+                btnText.textContent = 'Buscar Contratos';
+                spinner.classList.add('hidden');
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!window.globalResults || window.globalResults.length === 0) return;
+            
+            const ws = XLSX.utils.json_to_sheet(window.globalResults.map(item => ({
+                "Nº Contrato/Empenho": item.numero_contrato || 'N/A',
+                "Órgão Comprador": item.orgao || 'N/A',
+                "Empresa Contratada": item.empresa || 'N/A',
+                "Objeto": item.objeto || 'N/A',
+                "Valor Total Homologado": item.valor_homologado || 'R$ 0,00',
+                "Valor já Empenhado": item.valor_empenhado || 'R$ 0,00',
+                "Data de Assinatura": item.data_assinatura || 'N/A'
+            })));
+
+            const wb = XLSX.utils.book_new();
+            
+            const colWidths = [
+                { wch: 25 }, // Nº Contrato
+                { wch: 50 }, // Órgão
+                { wch: 40 }, // Empresa
+                { wch: 80 }, // Objeto
+                { wch: 25 }, // V. Homologado
+                { wch: 25 }, // V. Empenhado
+                { wch: 20 }  // Assinatura
+            ];
+            ws['!cols'] = colWidths;
+
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for(let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_col(C) + "1"; 
+                if(!ws[address]) continue;
+                ws[address].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F81BD" } },
+                    alignment: { horizontal: "center" }
+                };
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, "Contratos e Empenhos PNCP");
+            XLSX.writeFile(wb, `pncp_contratos_${new Date().getTime()}.xlsx`);
+        });
+    </script>
+</body>
+</html>
