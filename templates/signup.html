@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MIB Solutions</title>
+    <title>Criar Conta - MIB Solutions</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -21,14 +21,14 @@
         }
     </script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-8 font-sans flex items-center justify-center">
+<body class="bg-[#121212] text-white min-h-screen p-8 font-sans flex items-center justify-center">
     <div class="max-w-md w-full">
         <header class="mb-10 text-center flex flex-col justify-center items-center gap-3">
-            <span class="text-5xl mb-2">🎯</span>
+            <span class="text-5xl mb-2">📝</span>
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-brand-600">
-                Acesso ao Sistema
+                Criar Conta
             </h1>
-            <p class="text-gray-400 mt-2 text-center">Buscador Inteligente de Licitações</p>
+            <p class="text-gray-400 mt-2 text-center">Acesse o Buscador Inteligente de Licitações</p>
         </header>
 
         <div class="bg-[#1b1b1b] rounded-xl p-8 shadow-xl border border-gray-800">
@@ -42,16 +42,16 @@
               {% endif %}
             {% endwith %}
 
-            <form action="{{ url_for('login') }}" method="POST" class="flex flex-col gap-6">
+            <form action="{{ url_for('signup') }}" method="POST" class="flex flex-col gap-6">
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-300 mb-2">E-mail</label>
                     <input 
-                        type="text" 
+                        type="email" 
                         id="email" 
                         name="email"
-                        placeholder="Seu e-mail cadastrado" 
+                        placeholder="Seu e-mail"
                         required
-                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                     >
                 </div>
                 <div>
@@ -60,20 +60,20 @@
                         type="password" 
                         id="senha" 
                         name="senha"
-                        placeholder="Sua senha" 
+                        placeholder="Crie uma senha" 
                         required
-                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                     >
                 </div>
                 <button 
                     type="submit" 
                     class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition duration-200 mt-2"
                 >
-                    Entrar
+                    Criar Conta
                 </button>
             </form>
             <div class="mt-6 text-center text-sm text-gray-400">
-                Não tem conta? <a href="{{ url_for('signup') }}" class="text-brand-500 hover:text-brand-400 font-semibold">Criar Conta</a>
+                Já tem conta? <a href="{{ url_for('login') }}" class="text-brand-500 hover:text-brand-400 font-semibold">Entrar</a>
             </div>
         </div>
         <p class="text-center text-gray-500 mt-8 text-sm">

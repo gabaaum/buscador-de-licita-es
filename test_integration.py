@@ -3,7 +3,6 @@ import json
 
 BASE_URL = "http://localhost:5000"
 LOGIN_URL = f"{BASE_URL}/login"
-SEARCH_PAGAS_URL = f"{BASE_URL}/api/search_pagas"
 
 # Login to get session
 session = requests.Session()
