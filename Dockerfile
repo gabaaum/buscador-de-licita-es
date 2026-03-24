@@ -4,9 +4,10 @@ FROM python:3.11-slim
 # Diretório de trabalho no container
 WORKDIR /app
 
-# Instalar dependências de sistema (necessárias para o Playwright/Chromium)
+# Instalar dependências de sistema (necessárias para o Playwright/Chromium) no Debian moderno (Trixie/Sid)
 RUN apt-get update && apt-get install -y \
-    wget gnupg curl unzip tzdata libgconf-2-4 libgtk-3-0 libxss1 libnss3 libasound2 \
+    wget gnupg curl unzip tzdata libgtk-3-0 libxss1 libnss3 libasound2 \
+    libatk-bridge2.0-0 libgbm1 libdrm2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copia os arquivos de requerimentos primeiro (aproveita cache do Docker)
@@ -23,9 +24,6 @@ RUN playwright install-deps
 # Copia todo o projeto para o diretório
 COPY . .
 
-# Expõe a porta que o Flask vai rodar
-EXPOSE 5000
-
-# Comando para iniciar o servidor web usando Gunicorn
+# Comando para iniciar o servidor web usando Gunicorn vinculado à porta dinâmica do Render
 # Timeout de 120s para permitir consultas longas de Scraping
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "120", "--workers", "3", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --timeout 120 --workers 3 app:app"]
