@@ -1,0 +1,133 @@
+{
+  "name": "Portal de Sinistros GBL - Fluxo de Integração",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://aplication-n8n.ho923p.easypanel.host/webhook/seguros",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "options": {},
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "nome",
+              "value": "={{ $json['nome'] }}"
+            },
+            {
+              "name": "apolice",
+              "value": "={{ $json['apolice'] }}"
+            },
+            {
+              "name": "placa",
+              "value": "={{ $json['placa'] }}"
+            },
+            {
+              "name": "cobertura",
+              "value": "={{ $json['cobertura'] }}"
+            },
+            {
+              "name": "descricao",
+              "value": "={{ $json['descricao'] }}"
+            },
+            {
+              "name": "peca",
+              "value": "={{ $json['analise_ia']['peca'] }}"
+            },
+            {
+              "name": "gravidade",
+              "value": "={{ $json['analise_ia']['gravidade'] }}"
+            },
+            {
+              "name": "acao_sugerida",
+              "value": "={{ $json['analise_ia']['acao_sugerida'] }}"
+            }
+          ]
+        }
+      },
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const imagens = $json['imagens'];\nconst base64Images = imagens.map(img => `data:image/jpeg;base64,${img}`);\n\nreturn [{\n  json: {\n    ...$json,\n    imagensBase64: base64Images\n  }\n}];"
+      },
+      "name": "Function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {},
+        "to": "cliente@gbseguros.com",
+        "from": "sinistros@gbseguros.com",
+        "subject": "Resultado da Análise do Sinistro - GBL",
+        "body": "Olá {{$json['nome']}},<br><br>Sua análise de sinistro foi concluída:<br><br><strong>Veículo:</strong> {{$json['placa']}}<br><strong>Peça danificada:</strong> {{$json['peca']}}<br><strong>Gravidade:</strong> {{$json['gravidade']}}<br><strong>Ação sugerida:</strong> {{$json['acao_sugerida']}}<br><br>Em anexo, as imagens do dano.<br><br>Atenciosamente,<br>Equipe GBL"
+      },
+      "name": "Email",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
